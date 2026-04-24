@@ -1,6 +1,10 @@
-# CrewAI Scheduler v3.2
+# CrewAI Scheduler Skill v3.2
 
-AI 多智能体团队调度系统 — 支持 8 阶段项目工作流流水线、模块化开发、断点续传。
+> **OpenClaw / Claw 通用 Skill 技能包** — 兼容各大厂 Claw 框架的 AI 多智能体团队调度系统。
+>
+> 支持 8 阶段项目工作流流水线、模块化开发、断点续传、上下文压缩、检查点机制。
+>
+> **Skill 用途**：当用户需要管理 AI 驱动的数字公司、多 Agent 任务调度、项目工作流管线或自动化团队编排时触发使用。
 
 ## 项目结构
 
@@ -138,6 +142,20 @@ python __main__.py monitor
 - `api` — LLM API 配置（密钥、模型、超时等）
 - `system.debug` — 是否开启 Debug 日志
 - `workflow.技术部` — 工作流阶段定义、回退规则、模块化开发配置
+
+## 框架兼容性
+
+本 Skill 遵循 **OpenClaw Skill 规范**，可无缝集成到以下框架：
+
+| 框架 | 兼容性 | 说明 |
+|------|--------|------|
+| **OpenClaw** | ✅ 原生支持 | 标准 Skill 目录结构，自动识别 `SKILL.md` |
+| **CodeBuddy** | ✅ 完全兼容 | 支持 `__main__.py` 入口和 CLI 命令调用 |
+| **CrewAI** | ✅ 深度集成 | 基于 CrewAI 多 Agent 理念设计的阶段工作流 |
+| **AutoGen** | ⚠️ 部分兼容 | 工作流阶段可映射为 AutoGen 的 GroupChat |
+| **MetaGPT** | ⚠️ 概念兼容 | 8 阶段流水线与 MetaGPT 的 SOP 理念一致 |
+
+**集成方式**：将本仓库克隆到对应框架的 `skills/` 目录下，框架会自动识别 `SKILL.md` 中的路由定义。
 
 ## 注意事项
 
