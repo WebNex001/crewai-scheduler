@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "created_at": "2026-04-24T21:44:10.228058",
+  "last_updated": "2026-04-24T21:58:06.026607",
+  "summary": {
+    "total_calls": 3,
+    "successful_calls": 1,
+    "failed_calls": 2,
+    "success_rate": 33.33333333333333,
+    "total_duration_ms": 706114.415884018,
+    "avg_duration_ms": 235371.47196133932,
+    "commands_used": {
+      "execute-workflow": 3
+    },
+    "departments_used": {},
+    "errors_by_type": {
+      "'dict' object has no attribute 'print'": 2
+    }
+  },
+  "calls": [
+    {
+      "timestamp": "2026-04-24T21:44:10.228058",
+      "command": "execute-workflow",
+      "success": false,
+      "duration_ms": 10.53,
+      "department": null,
+      "error": "'dict' object has no attribute 'print'",
+      "extra": {}
+    },
+    {
+      "timestamp": "2026-04-24T21:44:33.080579",
+      "command": "execute-workflow",
+      "success": false,
+      "duration_ms": 11.06,
+      "department": null,
+      "error": "'dict' object has no attribute 'print'",
+      "extra": {}
+    },
+    {
+      "timestamp": "2026-04-24T21:58:06.026607",
+      "command": "execute-workflow",
+      "success": true,
+      "duration_ms": 706092.82,
+      "department": null,
+      "error": null,
+      "extra": {}
+    }
+  ],
+  "daily_stats": {
+    "2026-04-24": {
+      "calls": 3,
+      "success": 1,
+      "failed": 2,
+      "duration_ms": 706114.415884018
+    }
+  }
+}

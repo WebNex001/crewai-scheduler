@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.env
+*.log
+data/
+.DS_Store
+Thumbs.db
+
+# 安全：配置文件可能含密钥
+config.json
+
+# 运行时输出
+Debug/
+project/
+
+# 临时/备份文件
+*.tmp
+*.backup
+workflow_err.log
