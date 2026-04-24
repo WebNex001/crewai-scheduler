@@ -1,10 +1,10 @@
 {
   "_comment": "=== CrewAI Scheduler v3.1 配置文件 ===",
 
-  "api": {
-    "_comment_api": "=== LLM API 配置 ===",
-    "openai_api_key": "sk-api--Tvt1HnFgavKcaidbWeNBMcHT5BjpMQoZSWJWXo1zwlIFnTEuYZJ1mIPX6kl5TVAZIiiJIgODgeFVFkiI8s6ojmWF0XpvX_5jiK2nVJm9KTIulHaNu8onGY",
-    "base_url": "https://api.minimaxi.com/v1",
+“api”：{
+    : "=== LLM API 配置 ===",
+    "openai_api_key": "你的token",
+    基础URL: "https://api.minimaxi.com/v1",
     "model": "minimax-m2",
     "temperature": 0.7,
     "max_tokens": 128000,
@@ -22,13 +22,13 @@
     },
     "运营部": {
       "name": "运营部",
-      "description": "负责内容运营和数据分析",
-      "agents": ["运营经理", "内容运营", "数据运营"],
+      “描述”: “负责内容运营和数据分析”,
+      “代理”: [“运营经理”, “内容运营”, “数据运营”],
       "max_concurrent": 2
     },
     "交付部": {
       "name": "交付部",
-      "description": "负责项目交付和文档编写",
+      “描述”: “负责项目交付和文档编写”,
       "agents": ["交付经理", "交付工程师"],
       "max_concurrent": 2
     }
@@ -117,10 +117,10 @@
         "_comment_mode": "模块化开发模式: auto=自动判断 | always=强制拆模块 | never=从不拆模块（单次开发）",
         "mode": "auto",
 
-        "_comment_max_files": "每个模块最多包含的文件数，超过此数的模块会被AI拆分",
+        "_comment_max_files": “每个模块最多包含的文件数，超过此数的模块会被AI拆分”,
         "max_files_per_module": 8,
 
-        "_comment_max_modules": "项目最多允许的模块数，超出时自动合并文件少的相邻模块",
+        "_comment_max_modules": “项目最多允许的模块数，超出时自动合并文件少的相邻模块”,
         "max_modules": 10,
 
         "_comment_min_split": "auto模式下，项目总文件数 <= 此值时不拆模块（小项目走单次开发更快）",
