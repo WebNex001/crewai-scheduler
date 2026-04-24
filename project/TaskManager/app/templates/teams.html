@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}团队协作 - TaskFlow{% endblock %}
+
+{% block header_title %}团队协作{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <button class="btn btn-primary" onclick="openTeamModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        创建团队
+    </button>
+</div>
+
+<!-- 团队列表 -->
+<div id="teamList" class="task-list">
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <h3>暂无团队</h3>
+        <p>创建一个团队，开始团队协作</p>
+    </div>
+</div>
+
+<!-- 创建团队模态框 -->
+<div class="modal-overlay" id="teamModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">创建团队</h3>
+            <button class="modal-close" onclick="TaskFlow.Modal.hide('teamModal')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form id="teamForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">团队名称 *</label>
+                    <input type="text" class="form-control" id="teamName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">团队描述</label>
+                    <textarea class="form-control" id="teamDescription" name="description" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="TaskFlow.Modal.hide('teamModal')">取消</button>
+                <button type="submit" class="btn btn-primary">创建</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 加载团队列表
+    async function loadTeams() {
+        try {
+            const data = await TaskFlow.API.get(`${TaskFlow.API_BASE_URL}/teams`);
+            renderTeams(data.teams || []);
+        } catch (error) {
+            TaskFlow.Notification.error('加载团队失败');
+        }
+    }
+    
+    // 渲染团队列表
+    function renderTeams(teams) {
+        const container = document.getElementById('teamList');
+        if (!container) return;
+        
+        if (teams.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    <h3>暂无团队</h3>
+                    <p>创建一个团队，开始团队协作</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = teams.map(team => `
+            <div class="task-item" onclick="showTeamDetail(${team.id})">
+                <div class="task-header">
+                    <span class="task-title">${escapeHtml(team.name)}</span>
+                    <span class="badge">${team.member_count} 成员</span>
+                </div>
+                ${team.description ? `<p style="color: var(--text-secondary); font-size: 13px;">${escapeHtml(team.description)}</p>` : ''}
+            </div>
+        `).join('');
+    }
+    
+    // 创建团队
+    async function createTeam(event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        try {
+            await TaskFlow.API.post(`${TaskFlow.API_BASE_URL}/teams`, {
+                name: formData.get('name'),
+                description: formData.get('description') || undefined
+            });
+            
+            TaskFlow.Notification.success('团队创建成功');
+            TaskFlow.Modal.hide('teamModal');
+            form.reset();
+            loadTeams();
+        } catch (error) {
+            TaskFlow.Notification.error(error.message || '创建团队失败');
+        }
+    }
+    
+    function openTeamModal() {
+        document.getElementById('teamForm').reset();
+        TaskFlow.Modal.show('teamModal');
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('teamForm')?.addEventListener('submit', createTeam);
+        loadTeams();
+    });
+</script>
+{% endblock %}

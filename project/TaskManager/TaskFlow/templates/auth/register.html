@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">
+                    <i class="bi bi-kanban text-primary"></i> TaskFlow
+                </h2>
+                <h4 class="text-center mb-4">注册</h4>
+                
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   required autofocus placeholder="3-80个字符，只允许字母、数字和下划线">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   required placeholder="请输入邮箱地址">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   required placeholder="至少6个字符">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">确认密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                   required placeholder="请再次输入密码">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">注册</button>
+                </form>
+                
+                <hr class="my-4">
+                
+                <p class="text-center">
+                    已有账号？ <a href="{{ url_for('auth.login') }}">立即登录</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

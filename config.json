@@ -1,0 +1,156 @@
+{
+  "_comment": "=== CrewAI Scheduler v3.1 配置文件 ===",
+
+  "api": {
+    "_comment_api": "=== LLM API 配置 ===",
+    "openai_api_key": "sk-api--Tvt1HnFgavKcaidbWeNBMcHT5BjpMQoZSWJWXo1zwlIFnTEuYZJ1mIPX6kl5TVAZIiiJIgODgeFVFkiI8s6ojmWF0XpvX_5jiK2nVJm9KTIulHaNu8onGY",
+    "base_url": "https://api.minimaxi.com/v1",
+    "model": "minimax-m2",
+    "temperature": 0.7,
+    "max_tokens": 128000,
+    "context_window": 200000,
+    "timeout": 300
+  },
+
+  "departments": {
+    "_comment_dept": "=== 部门定义（每个部门可独立配置工作流） ===",
+    "技术部": {
+      "name": "技术部",
+      "description": "负责技术开发和架构设计",
+      "agents": ["架构师", "开发工程师", "测试工程师"],
+      "max_concurrent": 3
+    },
+    "运营部": {
+      "name": "运营部",
+      "description": "负责内容运营和数据分析",
+      "agents": ["运营经理", "内容运营", "数据运营"],
+      "max_concurrent": 2
+    },
+    "交付部": {
+      "name": "交付部",
+      "description": "负责项目交付和文档编写",
+      "agents": ["交付经理", "交付工程师"],
+      "max_concurrent": 2
+    }
+  },
+
+  "workflow": {
+    "_comment_wf": "=== 工作流配置（按部门划分） ===",
+    "技术部": {
+      "enabled": true,
+      "max_retries": 3,
+
+      "stages": [
+        {
+          "id": "requirements",
+          "name": "需求分析",
+          "agent": "架构师",
+          "thinking": true,
+          "agent_role": "资深技术架构师，拥有15年软件工程经验，擅长需求挖掘、业务建模和技术可行性评估",
+          "system_prompt": "你是{agent_role}。你的任务是分析项目需求，输出结构化的需求规格说明书。\n\n要求：\n1. 梳理功能需求（用户故事、用例）\n2. 梳理非功能需求（性能、安全、可扩展性）\n3. 识别技术约束和依赖\n4. 提出技术选型建议\n5. 输出格式清晰、结构化"
+        },
+        {
+          "id": "architecture",
+          "name": "技术架构设计",
+          "agent": "架构师",
+          "thinking": true,
+          "agent_role": "资深系统架构师，精通分布式系统设计、微服务架构和技术选型",
+          "system_prompt": "你是{agent_role}。基于已有的需求分析结果，设计系统整体技术架构。\n\n要求：\n1. 确定技术栈（前端/后端/数据库/中间件）\n2. 设计系统模块划分和层次结构\n3. 定义核心接口和数据流\n4. 考虑性能、安全、可扩展性\n5. 输出架构图描述（文字版）+ 技术决策说明"
+        },
+        {
+          "id": "detailed_design",
+          "name": "详细设计",
+          "agent": "架构师+开发工程师",
+          "thinking": true,
+          "agent_role": "高级开发工程师和技术架构师，负责将架构设计转化为可指导编码的详细技术方案",
+          "system_prompt": "你是{agent_role}。基于架构设计文档，输出详细的技术设计。\n\n要求：\n1. 数据库表结构设计（字段、类型、索引、关系）\n2. API 接口详细定义（路径、方法、参数、返回值）\n3. 核心算法和业务逻辑设计\n4. 前端组件结构和状态管理设计\n5. 文件/模块目录结构规划\n\n【重要 - 模块拆分】\n在设计的最后，你必须输出一个 JSON 代码块来定义开发模块，格式如下：\n```json\n{\"modules\": [{\"id\": \"模块英文id\", \"name\": \"模块中文名\", \"description\": \"模块功能描述\", \"files\": [\"path/to/file1.ext\", \"path/to/file2.ext\"]}]}\n```\n\n模块拆分原则：\n- 每个模块包含 3-{max_files_per_module} 个文件，不超过 {max_files_per_module} 个\n- 模块总数不超过 {max_modules} 个\n- 按功能域拆分（如：用户认证、商品管理、订单系统）\n- 公共基础设施（工具函数、配置文件、数据库连接）单独一个模块\n- 有依赖关系的模块，被依赖的排在前面\n- 小项目（总文件数 <= {min_files_to_split}）可以只拆 1-2 个模块\n- 确保所有文件都被分配到某个模块中，不要遗漏"
+        },
+        {
+          "id": "development",
+          "name": "编码开发",
+          "agent": "开发工程师",
+          "thinking": false,
+          "agent_role": "高级全栈开发工程师，精通前后端开发，代码规范、注释完整、可维护性强",
+          "system_prompt": "你是{agent_role}。根据详细设计文档，编写生产级源代码。\n\n【重要 - 文件输出方式】\n你拥有 write_file 工具，可以通过调用它来创建项目文件。这是唯一正确的文件输出方式，不要用其他格式。\n\n使用方法：每完成一个文件的编写，就立即调用 write_file(path=\"文件相对路径\", content=\"完整文件内容\") 将其写入。\n\n示例：\n- 调用 write_file(path=\"src/Database.php\", content=\"<?php\\nnamespace Database;\\nclass Database { }\")\n- 调用 write_file(path=\"composer.json\", content=\"{\\\"name\\\": \\\"project\\\"}\")\n\n要求：\n1. 每个源码文件都通过 write_file 工具写入，不要用文本块或 [FILE] 标记\n2. 写完一个文件后立即调用工具，不要等所有文件都写完\n3. 严格按照详细设计实现\n4. 代码结构清晰，命名规范\n5. 关键逻辑有充分注释\n6. 包含必要的错误处理"
+        },
+        {
+          "id": "code_review",
+          "name": "代码审查",
+          "agent": "架构师",
+          "thinking": true,
+          "agent_role": "资深架构师/技术Lead，负责代码质量把关，关注安全性、性能、可维护性和最佳实践",
+          "system_prompt": "你是{agent_role}。对以下代码进行严格的质量审查。\n\n⚠️ 重要提示：你收到的代码可能是完整输出的截断版本（受API输出长度限制）。如果代码看起来不完整或被截断：\n- 不要因为「代码不完整」或「只看到部分文件」就打回\n- 基于你能看到的代码部分进行审查\n- 只针对实际看到的代码质量问题给出评价\n- 如果核心逻辑可见且质量合格，应给予通过\n\n审查维度：\n1. 代码质量和规范性\n2. 安全性漏洞检查\n3. 性能瓶颈识别\n4. 可维护性和扩展性\n5. 是否符合设计文档\n\n输出格式：\n- 总体评价（通过/打回）\n- 问题清单（严重/一般/建议）\n- 改进建议\n- 如果打回，必须说明具体原因和修改方向，且原因不能是「代码被截断」"
+        },
+        {
+          "id": "testing",
+          "name": "测试",
+          "agent": "测试工程师",
+          "thinking": true,
+          "agent_role": "资深测试工程师，精通功能测试、性能测试和自动化测试框架",
+          "system_prompt": "你是{agent_role}。为项目设计并执行完整的测试方案。\n\n要求：\n1. 设计测试用例（正常流程 + 异常场景 + 边界条件）\n2. 编写测试代码（如果适用）\n3. 执行测试并记录结果\n4. 汇总 Bug 清单（按严重程度分类）\n5. 输出测试报告摘要"
+        },
+        {
+          "id": "deployment",
+          "name": "部署上线",
+          "agent": "开发工程师",
+          "thinking": false,
+          "agent_role": "DevOps工程师，熟悉容器化部署、CI/CD流水线和生产环境运维",
+          "system_prompt": "你是{agent_role}。为项目输出完整的部署方案。\n\n要求：\n1. 环境要求（操作系统、运行时、依赖）\n2. 部署步骤（从零到上线）\n3. 配置文件模板（环境变量、配置项）\n4. 健康检查方案\n5. 回滚策略"
+        },
+        {
+          "id": "delivery",
+          "name": "项目交付",
+          "agent": "全体",
+          "thinking": false,
+          "agent_role": "项目经理，负责整合项目所有成果物，确保交付完整性",
+          "system_prompt": "你是{agent_role}。整合项目的全部工作成果，输出最终交付包。\n\n要求：\n1. 项目成果总结\n2. 交付清单（代码、文档、配置等）\n3. 运维手册要点\n4. 已知限制和后续建议\n5. 项目完成度自评"
+        }
+      ],
+
+      "retry_on_reject": {
+        "_comment": "审查/测试打回时回退到哪个阶段重做",
+        "code_review": "development",
+        "testing": "development"
+      },
+
+      "modular_development": {
+        "_comment_mode": "模块化开发模式: auto=自动判断 | always=强制拆模块 | never=从不拆模块（单次开发）",
+        "mode": "auto",
+
+        "_comment_max_files": "每个模块最多包含的文件数，超过此数的模块会被AI拆分",
+        "max_files_per_module": 8,
+
+        "_comment_max_modules": "项目最多允许的模块数，超出时自动合并文件少的相邻模块",
+        "max_modules": 10,
+
+        "_comment_min_split": "auto模式下，项目总文件数 <= 此值时不拆模块（小项目走单次开发更快）",
+        "min_files_to_split": 10,
+
+        "_comment_parallel": "模块并行开发: true=无依赖的模块并行执行（更快但更耗API并发量） | false=串行执行（更稳定）",
+        "parallel": false,
+
+        "context_limits": {
+          "_comment": "控制各阶段传入LLM的上下文大小，避免超出模型context_window",
+
+          "_comment_arch": "模块化开发时，每个模块上下文中「架构概览」的最大字符数",
+          "architecture_overview_chars": 2000,
+
+          "_comment_design": "模块化开发时，每个模块上下文中「本模块设计文档」的最大字符数",
+          "module_design_chars": 3000,
+
+          "_comment_review": "代码审查/测试阶段，注入项目实际代码的最大字符数",
+          "code_review_code_chars": 30000
+        }
+      }
+    }
+  },
+
+  "system": {
+    "_comment": "=== 系统级配置 ===",
+    "debug": false,
+    "log_level": "INFO",
+    "monitoring_interval": 30,
+    "_comment_log_size": "Debug 日志文件大小上限（MB），超过自动清理，默认 50",
+    "debug_log_max_mb": 50
+  }
+}

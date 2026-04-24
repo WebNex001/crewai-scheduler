@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">仪表盘</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">欢迎回来，{{ current_user.get_display_name() }}！</li>
+    </ol>
+    
+    <!-- 统计卡片 -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">总任务数</div>
+                            <div class="fs-4">{{ stats.total }}</div>
+                        </div>
+                        <i class="bi bi-list-task fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">待处理</div>
+                            <div class="fs-4">{{ stats.pending }}</div>
+                        </div>
+                        <i class="bi bi-clock fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">已完成</div>
+                            <div class="fs-4">{{ stats.completed }}</div>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-white-50 small">已逾期</div>
+                            <div class="fs-4">{{ stats.overdue }}</div>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- 今日到期任务 -->
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    今日到期
+                </div>
+                <div class="card-body">
+                    {% if today_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in today_tasks %}
+                        <a href="{{ url_for('tasks.detail', task_id=task.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ task.title }}</h6>
+                                <small class="text-{{ 'danger' if task.is_overdue() else 'warning' }}">
+                                    {{ task.due_date.strftime('%H:%M') if task.due_date else '无到期日' }}
+                                </small>
+                            </div>
+                            <small class="text-muted">
+                                <span class="badge bg-{{ 'danger' if task.priority == 4 else 'warning' if task.priority == 3 else 'info' }}">
+                                    {{ TaskPriority.get_display_name(task.priority) }}
+                                </span>
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">暂无今日到期任务</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最近创建的任务 -->
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-clock-history me-1"></i>
+                    最近创建
+                </div>
+                <div class="card-body">
+                    {% if recent_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in recent_tasks %}
+                        <a href="{{ url_for('tasks.detail', task_id=task.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ task.title }}</h6>
+                                <small class="text-muted">{{ task.status_display }}</small>
+                            </div>
+                            <small class="text-muted">
+                                {% if task.category %}
+                                <span class="me-2" style="color: {{ task.category.color }}">
+                                    <i class="bi bi-folder-fill"></i> {{ task.category.name }}
+                                </span>
+                                {% endif %}
+                                {{ task.created_at.strftime('%m-%d %H:%M') }}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">暂无任务</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分类统计 -->
+    {% if category_stats %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-pie-chart me-1"></i>
+                    分类统计
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for stat in category_stats %}
+                        <div class="col-md-2 col-6 text-center">
+                            <div class="border rounded p-3 mb-2" style="background-color: {{ stat.category.color }}15">
+                                <i class="bi bi-folder-fill fs-4" style="color: {{ stat.category.color }}"></i>
+                                <div class="fw-bold">{{ stat.category.name }}</div>
+                                <div class="small text-muted">{{ stat.pending_count }} 待处理</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- 快捷操作 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-lightning me-1"></i>
+                    快捷操作
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('tasks.create') }}" class="btn btn-primary me-2">
+                        <i class="bi bi-plus-circle"></i> 新建任务
+                    </a>
+                    <a href="{{ url_for('categories.list') }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-folder"></i> 管理分类
+                    </a>
+                    <a href="{{ url_for('teams.list') }}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-people"></i> 我的团队
+                    </a>
+                    <a href="{{ url_for('main.search') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-search"></i> 搜索
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
