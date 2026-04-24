@@ -1358,6 +1358,9 @@ def cmd_execute_workflow(project_name: str = None, start_stage: int = None,
                             # 检查点：跳过已完成的文件
                             if file_path in checkpoint_files:
                                 return "文件 %s 已在上一轮写入，已跳过" % file_path
+                            # 过滤无扩展名的占位符路径（如 project_root）
+                            if '.' not in os.path.basename(file_path):
+                                return "错误: 路径 '%s' 缺少文件扩展名，不允许写入目录占位符" % file_path
                             target_path = os.path.join(project_path, file_path)
                             # 路径遍历检查：先检查 .. 组件和绝对路径
                             norm_fp = os.path.normpath(file_path)
@@ -1369,6 +1372,12 @@ def cmd_execute_workflow(project_name: str = None, start_stage: int = None,
                             if not (os.path.normcase(real_target).startswith(os.path.normcase(real_project + os.sep))
                                     or os.path.normcase(real_target) == os.path.normcase(real_project)):
                                 return "错误: 路径 '%s' 超出项目目录，不允许写入" % file_path
+                            # 如果目标路径已存在且是文件，先删除避免 WinError 183
+                            if os.path.exists(target_path) and not os.path.isdir(target_path):
+                                try:
+                                    os.remove(target_path)
+                                except OSError:
+                                    pass
                             parent_dir = os.path.dirname(target_path)
                             if parent_dir:
                                 os.makedirs(parent_dir, exist_ok=True)
